@@ -1,12 +1,15 @@
 pipeline {
-    options {
+    
+	agent any
+	
+	options {
         // set a timeout of 60 minutes for this pipeline
         timeout(time: 60, unit: 'MINUTES')
     }
-    agent {
-      node {
-        label 'maven'
-      }
+    
+    tools { 
+        maven 'maven-3.6.3' 
+        jdk 'jdk8' 
     }
 
     environment {
