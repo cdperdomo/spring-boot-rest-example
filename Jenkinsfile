@@ -1,51 +1,65 @@
-node {
-    // Get the Maven tool.
-    // ** NOTE: This 'M3' Maven tool must be configured
-    // **       in the global configuration.           
-    def mvnHome = tool 'maven-3'
-    def PROJECT_NAME = 'camel-spring-boot'
-    def APP_NAME = 'spring-boot-rest-example'
-    
-    echo 'Starting Pipeline'
-    
-    stage('Check Out Code') { // for display purposes
-        // Get some code from a GitHub repository
-        git branch: 'master', url: 'https://github.com/CarlosPerdomo/spring-boot-rest-example.git'
+pipeline {
+    options {
+        // set a timeout of 60 minutes for this pipeline
+        timeout(time: 60, unit: 'MINUTES')
     }
-    
-    stage('Compilation Check') {
-        // Run the maven build
-        withEnv(["MVN_HOME=$mvnHome"]) {
-            sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore clean package'
+    agent {
+      node {
+        label 'maven'
+      }
+    }
+
+    environment {
+        DEV_PROJECT = "camel-spring-boot"
+        STAGE_PROJECT = "youruser-movies-stage"
+        APP_GIT_URL = "https://github.com/CarlosPerdomo/spring-boot-rest-example.git"
+        NEXUS_SERVER = "http://maven.assertservices.com/repository/internal/"
+
+        // DO NOT CHANGE THE GLOBAL VARS BELOW THIS LINE
+        APP_NAME = "movies"
+    }
+
+
+    stages {
+
+        stage('Compilation Check') {
+            steps {
+                echo '### Checking for compile errors ###'
+                sh '''
+                        cd ${APP_NAME}
+                        mvn -s settings.xml -B clean compile
+                   '''
+            }
         }
-    }
-    
-    stage('Run Unit Tests') {
-        // Run the maven build
-        withEnv(["MVN_HOME=$mvnHome"]) {
-            sh '"$MVN_HOME/bin/mvn" -Dmaven.skip.test=false -Dmaven.test.failure.ignore=true test'
+
+        stage('Run Unit Tests') {
+            steps {
+                echo '### Running unit tests ###'
+                sh '''
+                        cd ${APP_NAME}
+                        mvn -s settings.xml -B clean test
+                   '''
+            }
         }
-    }
-    
-    stage('Static Code Analysis') {
-        echo '### Running SonarQuebe on code ###'
-    }
-    
-    stage('OpenShift Commands') {
-        echo '### Listing Pods in Project ###'
-        sh '''
-                oc get pods -n $PROJECT_NAME
-           '''
-           
-        echo '### Creating a new app in DEV env ###'
-        script {
-            openshift.withCluster() {
-              openshift.withProject(env.DEV_PROJECT) {
-                openshift.selector("bc", "${APP_NAME}").startBuild("--from-file=target/springbootdemo-0.0.1-SNAPSHOT.jar", "--wait=true", "--follow=true")
-              }
+
+        stage('Static Code Analysis') {
+            steps {
+                echo '### Running pmd on code ###'
+                sh '''
+                        cd ${APP_NAME}
+                        mvn -s settings.xml -B clean pmd:check
+                   '''
+            }
+        }
+
+        stage('Create fat JAR') {
+            steps {
+                echo '### Creating fat JAR ###'
+                sh '''
+                        cd ${APP_NAME}
+                        mvn -s settings.xml -B clean package -DskipTests=true
+                   '''
             }
         }
     }
-    
-    echo 'End Pipeline'
 }
