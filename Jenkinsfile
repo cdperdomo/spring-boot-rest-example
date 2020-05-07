@@ -17,7 +17,7 @@ def pipeline () {
     // Get the Maven tool.
     // ** NOTE: This 'M3' Maven tool must be configured
     // **       in the global configuration.           
-    def MVN_HOME = tool 'maven-3'
+    def MVN_HOME = tool 'maven-3.6.3'
     def DEV_PROJECT = 'camel-spring-boot'
     def APP_NAME = 'spring-boot-rest-example'
     
