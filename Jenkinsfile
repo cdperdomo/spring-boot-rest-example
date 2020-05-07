@@ -23,6 +23,13 @@ pipeline {
     stages {
 		sh 'printenv'
 		
+		 stage('Print ENV vars') {
+            steps {
+                echo '### Printing ENV Vars ###'
+                sh 'printenv'
+            }
+        }
+		
         stage('Compilation Check') {
             steps {
                 echo '### Checking for compile errors ###'
