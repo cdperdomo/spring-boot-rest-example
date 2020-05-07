@@ -21,8 +21,6 @@ pipeline {
 
 
     stages {
-		sh 'printenv'
-		
 		 stage('Print ENV vars') {
             steps {
                 echo '### Printing ENV Vars ###'
