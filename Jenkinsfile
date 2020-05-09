@@ -2,7 +2,7 @@ node {
     properties([
       parameters(
           [
-            string(name: 'namespace', defaultValue: 'jenkins', description:'Openshift default namespace'),
+            string(name: 'namespace', defaultValue: 'cicd', description:'Openshift default namespace'),
             string(name: 'appName', defaultValue: 'spring-boot-rest', description:'Application name')
           ]
         )
