@@ -66,7 +66,13 @@ def pipeline() {
                     sleep 5
                     oc new-build openjdk:8 --name=${APP_NAME} --binary=true -n ${DEV_PROJECT}
                '''
-            echo '### Creating a new app in DEV env ###'
+            echo '### Starting Build ###'
+			
+			sh '''
+				oc start-build ${APP_NAME} --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true -n ${DEV_PROJECT}
+			   '''
+			
+			/*
             script {
                 openshift.withCluster() {
                   openshift.withProject(env.DEV_PROJECT) {
@@ -74,10 +80,16 @@ def pipeline() {
                   }
                 }
             }
-            sh '''
+            */
+		}	
+    }
+	stage('Build Image') {
+		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "ARTIFACT=$artifactName", "artifactVersion=$artifactVersion"]) {
+			 echo '### Creating a new app in DEV env ###'
+			 sh '''
                     oc new-app ${APP_NAME}:latest -n ${DEV_PROJECT}
                     oc expose svc/${APP_NAME} -n ${DEV_PROJECT}
                '''
-		}	
-    }
+		}
+	}
 }
