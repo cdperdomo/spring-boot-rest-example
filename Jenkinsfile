@@ -49,10 +49,12 @@ def pipeline() {
 	
 	stage('Compilation Check') {
         echo 'Building ' + artifactName
-        // Run the maven build
-        sh '''
-			${mvnCmd} -DskipTests clean package
-		   '''
+		withEnv(["MVN_HOME=$mvnCmd"]) {
+			// Run the maven build
+			sh '''
+				${MVN_HOME} -DskipTests clean package
+			   '''
+		}
     }
 	
 	stage('Build Image') {
