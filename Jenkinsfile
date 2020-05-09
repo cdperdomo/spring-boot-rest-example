@@ -48,7 +48,7 @@ def pipeline() {
 	}
 	
 	stage('Compilation Check') {
-        echo 'Building ' + artifactName
+        echo 'Building ' + artifactName + ' ' + artifactVersion
 		withEnv(["MVN_HOME=$mvnCmd"]) {
 			// Run the maven build
 			sh '''
@@ -70,7 +70,7 @@ def pipeline() {
             script {
                 openshift.withCluster() {
                   openshift.withProject(env.DEV_PROJECT) {
-                    openshift.selector("bc", "${APP_NAME}").startBuild("--from-file=target/${ARTIFACT}.jar", "--wait=true", "--follow=true")
+                    openshift.selector("bc", "${APP_NAME}").startBuild("--from-file=target/${ARTIFACT}-${artifactVersion}.jar", "--wait=true", "--follow=true")
                   }
                 }
             }
