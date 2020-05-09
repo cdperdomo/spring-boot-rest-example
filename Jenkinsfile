@@ -40,18 +40,21 @@ def pipeline() {
 		def pom = readMavenPom file: 'pom.xml'
 		artifactVersion = pom.version
 		artifactName = pom.artifactId
+		tag = "${artifactVersion}-" + currentBuild.number
+		
 		echo "La version del artefacto es: " + artifactVersion; 
 		echo "El nombre de artefacto es: " + artifactName; 
+		echo "tag: " + tag; 
 
-       tag = "${artifactVersion}-" + currentBuild.number		
+       		
 	}
 	
 	stage('Build Image') {
 		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
 			script {
 				openshift.withCluster() {
-					openshift.withProject(${namespace}) {
-						if (openshift.selector("bc", ${appName}).exists()) { 
+					openshift.withProject(env.namespace}) {
+						if (openshift.selector("bc", env.appName).exists()) { 
 							echo "Exist: ${appName}"
 						} else {
 							echo "Creating Build Config: ${appName}, tag: ${tag}"
