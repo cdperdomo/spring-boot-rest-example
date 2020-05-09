@@ -45,9 +45,15 @@ def pipeline() {
 		echo "La version del artefacto es: " + artifactVersion; 
 		echo "El nombre de artefacto es: " + artifactName; 
 		echo "tag: " + tag; 
-
-       		
 	}
+	
+	stage('Compilation Check') {
+        echo 'Building ' + ARTIFACT
+        // Run the maven build
+        sh '''
+			${mvnCmd} -DskipTests clean package
+		   '''
+    }
 	
 	stage('Build Image') {
 		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
