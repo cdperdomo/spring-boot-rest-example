@@ -53,7 +53,7 @@ def pipeline() {
 		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
 			script {
 				openshift.withCluster() {
-					openshift.withProject(env.namespace}) {
+					openshift.withProject(env.namespace) {
 						if (openshift.selector("bc", env.appName).exists()) { 
 							echo "Exist: ${appName}"
 						} else {
