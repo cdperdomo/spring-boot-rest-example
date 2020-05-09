@@ -48,7 +48,7 @@ def pipeline() {
 	}
 	
 	stage('Compilation Check') {
-        echo 'Building ' + ARTIFACT
+        echo 'Building ' + artifactName
         // Run the maven build
         sh '''
 			${mvnCmd} -DskipTests clean package
