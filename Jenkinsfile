@@ -10,7 +10,6 @@ node {
     try {
         pipeline()
     } catch (e) {
-        echo 'When error' + e
 		throw e
     } finally {
         echo 'Always'
@@ -60,11 +59,6 @@ def pipeline() {
 	
 	stage('Build Image') {
 		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
-			sh '''
-					oc delete all -l app=${appName} -n ${namespace}
-                    oc delete all -l build=${appName} -n ${namespace}
-                    sleep 5
-			   '''
 			script {
 				openshift.withCluster() {
 					openshift.withProject(env.namespace) {
