@@ -22,11 +22,11 @@ def pipeline() {
 
     //Stage de Preparación y configuración de herramientas
     stage('Preparing'){
-        //Herramienta de Maven
+        // Maven
     	mvnHome = tool 'M3'
     	mvnCmd = "${mvnHome}/bin/mvn "
     
-        //Definición Jdk
+        // Java
     	env.JAVA_HOME=tool 'JDK8'
     	env.PATH="${env.JAVA_HOME}/bin:${env.PATH}"
     	sh 'java -version'
@@ -34,5 +34,23 @@ def pipeline() {
 	
 	stage('Checkout Source') {
 	    checkout scm  
-	}   
+	}
+	
+	stage('Checkout Source') {
+	    checkout scm  
+	} 
+	
+	stage('cleanup') {
+        script {
+            openshift.withCluster() {
+                openshift.withProject(${params.namespace}) {
+					if (openshift.selector("bc", ${params.appName}).exists()) { 
+						echo "Exist: ${params.appName}"
+					} else {
+						echo "Not Exist: ${params.appName}"
+					}
+                }
+            }
+      }
+    }
 }
