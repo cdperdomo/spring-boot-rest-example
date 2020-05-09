@@ -10,7 +10,7 @@ node {
     try {
         pipeline()
     } catch (e) {
-        echo 'When error: $e'
+        echo 'When error', e
 		throw e
     } finally {
         echo 'Always'
