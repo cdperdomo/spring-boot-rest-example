@@ -64,7 +64,7 @@ def pipeline() {
                     oc delete all -l app=${APP_NAME} -n ${DEV_PROJECT}
                     oc delete all -l build=${APP_NAME} -n ${DEV_PROJECT}
                     sleep 5
-                    oc new-build java:8 --name=${APP_NAME} --binary=true -n ${DEV_PROJECT}
+                    oc new-build openjdk:8 --name=${APP_NAME} --binary=true -n ${DEV_PROJECT}
                '''
             echo '### Creating a new app in DEV env ###'
             script {
