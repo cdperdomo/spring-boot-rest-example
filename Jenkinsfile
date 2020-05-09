@@ -19,7 +19,10 @@ node {
 def pipeline() {
     echo "Namespace: ${params.namespace}"
     echo "Application name: ${params.appName}"
-
+    def tag
+	def artifactVersion
+	def artifactName
+	
     //Stage de Preparación y configuración de herramientas
     stage('Preparing'){
         // Maven
@@ -33,22 +36,30 @@ def pipeline() {
 	}
 	
 	stage('Checkout Source') {
-	    checkout scm  
+	    checkout scm
+		def pom = readMavenPom file: 'pom.xml'
+		artifactVersion = pom.version
+		artifactName = pom.artifactId
+		echo "La version del artefacto es: " + artifactVersion; 
+		echo "El nombre de artefacto es: " + artifactName; 
+
+       tag = "${artifactVersion}-" + currentBuild.number		
 	}
 	
-	stage('Checkout Source') {
-	    checkout scm  
-	} 
-	
-	stage('cleanup') {
-		withEnv(["namespace=$params.namespace", "appName=$params.appName"]) {
+	stage('Build Image') {
+		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
 			script {
 				openshift.withCluster() {
-					openshift.withProject(env.namespace) {
-						if (openshift.selector("service", "jenkins").exists()) { 
+					openshift.withProject(${namespace}) {
+						if (openshift.selector("bc", ${appName}).exists()) { 
 							echo "Exist: ${appName}"
 						} else {
-							echo "Not Exist: ${appName}"
+							echo "Creating Build Config: ${appName}, tag: ${tag}"
+							sh '''
+									oc new-build openshift/openjdk18-openshift --name=${appName} --binary=true -n ${namespace}
+									oc start-build ${appName} --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true -n ${namespace}
+									oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
+						       '''
 						}
 					}
 				}
