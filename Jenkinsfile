@@ -41,7 +41,7 @@ def pipeline() {
 	} 
 	
 	stage('cleanup') {
-		withEnv(["namespace=${params.namespace}", "appName=${params.appName}"]) {
+		withEnv(["namespace=$params.namespace", "appName=$params.appName"]) {
 			script {
 				openshift.withCluster() {
 					openshift.withProject(${namespace}) {
