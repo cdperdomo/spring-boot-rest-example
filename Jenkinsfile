@@ -59,7 +59,7 @@ def pipeline() {
 						} else {
 							echo "Creating Build Config: ${appName}, tag: ${tag}"
 							sh '''
-									oc new-build openshift/openjdk18-openshift --name=${appName} --binary=true -n ${namespace}
+									oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
 									oc start-build ${appName} --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true -n ${namespace}
 									oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
 						       '''
