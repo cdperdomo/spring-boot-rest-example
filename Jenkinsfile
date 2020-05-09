@@ -64,6 +64,10 @@ def pipeline() {
 					openshift.withProject(env.namespace) {
 						if (openshift.selector("bc", env.appName).exists()) { 
 							echo "Exist: ${appName}"
+							sh '''
+									oc start-build ${appName} --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true -n ${namespace}
+									oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
+						       '''
 						} else {
 							echo "Creating Build Config: ${appName}, tag: ${tag}"
 							sh '''
