@@ -3,7 +3,7 @@ node {
       parameters(
           [
             string(name: 'namespace', defaultValue: 'jenkins', description:'Openshift default namespace'),
-            string(name: 'appName', defaultValue: 'spring-boot-rest-example', description:'Application name')
+            string(name: 'appName', defaultValue: 'spring-boot-rest', description:'Application name')
           ]
         )
     ])
