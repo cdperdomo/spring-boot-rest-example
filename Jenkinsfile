@@ -41,16 +41,18 @@ def pipeline() {
 	} 
 	
 	stage('cleanup') {
-        script {
-            openshift.withCluster() {
-                openshift.withProject(${params.namespace}) {
-					if (openshift.selector("bc", ${params.appName}).exists()) { 
-						echo "Exist: ${params.appName}"
-					} else {
-						echo "Not Exist: ${params.appName}"
+		withEnv(["namespace=${params.namespace}", "appName=${params.appName}"]) {
+			script {
+				openshift.withCluster() {
+					openshift.withProject(${namespace}) {
+						if (openshift.selector("bc", ${appName}).exists()) { 
+							echo "Exist: ${appName}"
+						} else {
+							echo "Not Exist: ${appName}"
+						}
 					}
-                }
-            }
-      }
+				}
+			}	
+		}	
     }
 }
