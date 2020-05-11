@@ -80,7 +80,7 @@ def pipeline() {
             echo '### Starting Build ###'
 			
 			sh '''
-				oc start-build ${APP_NAME} --from-dir=./target/${artifactName}-${artifactVersion}.jar --from-file=Dockerfile --wait=true -n ${DEV_PROJECT}
+				oc start-build ${APP_NAME} --from-file=./target/${artifactName}-${artifactVersion}.jar --from-file=Dockerfile --wait=true -n ${DEV_PROJECT}
 			   '''
 			
 			/*
