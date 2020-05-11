@@ -54,7 +54,7 @@ def pipeline() {
     stage ('Test and Static Code Analysis') {
         parallel (
            'Unit Test': {
-                withEnv(["MVN_HOME=$MVN_HOME"]) {
+                withEnv(["MVN_HOME=$mvnCmd"]) {
 		            sh '''
 		            	${MVN_HOME} -DskipTests=false -Dmaven.test.failure.ignore=false test'
 		               '''	
