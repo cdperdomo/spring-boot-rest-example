@@ -67,25 +67,27 @@ def pipeline() {
      }
 	
 	stage('Build Image') {
-		withEnv(["namespace=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
-			echo '### Cleaning existing resources in $namespace env ###'
+		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
+			echo '### Cleaning existing resources in Namespace: ' + env.namespace + ' ###'
             sh '''
-                    oc delete all -l app=${APP_NAME} -n ${namespace}
-                    oc delete all -l build=${APP_NAME} -n ${namespace}
+                    oc delete all -l app=${appName} -n ${namespace}
+                    oc delete all -l build=${appName} -n ${namespace}
                     sleep 5
-                    oc new-build openjdk:8 --name=${APP_NAME} --binary=true -n ${namespace}
-                    
-                    oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
+                    oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
                '''
                
             echo '### Starting Build ###'
             script {
                 openshift.withCluster() {
-                  openshift.withProject(env.DEV_PROJECT) {
-                    openshift.selector("bc", "${APP_NAME}").startBuild("--from-dir=.", "--wait=true", "--follow=true")
+                  openshift.withProject(env.namespace) {
+                    openshift.selector("bc", "${appName}").startBuild("--from-dir=.", "--wait=true", "--follow=true")
                   }
                 }
             }
+            
+            sh '''
+            		oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
+               '''
             
 		}	
     }
