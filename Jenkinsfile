@@ -56,7 +56,7 @@ def pipeline() {
            'Unit Test': {
                 withEnv(["MVN_HOME=$mvnCmd"]) {
 		            sh '''
-		            	${MVN_HOME} -DskipTests=false -Dmaven.test.failure.ignore=false test'
+		            	${MVN_HOME} -DskipTests=false -Dmaven.test.failure.ignore=false test
 		               '''	
 		        }
            },
