@@ -83,8 +83,8 @@ def pipeline() {
             */
 		}	
     }
-	stage('Build Image') {
-		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "ARTIFACT=$artifactName", "artifactVersion=$artifactVersion"]) {
+	stage('New APP') {
+		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
 			 echo '### Creating a new app in DEV env ###'
 			 sh '''
                     oc new-app ${APP_NAME}:latest -n ${DEV_PROJECT}
