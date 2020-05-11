@@ -58,7 +58,7 @@ def pipeline() {
     }
 	
 	stage('Build Image') {
-		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "ARTIFACT=$artifactName", "artifactVersion=$artifactVersion"]) {
+		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
 			echo '### Cleaning existing resources in DEV env ###'
             sh '''
                     oc delete all -l app=${APP_NAME} -n ${DEV_PROJECT}
