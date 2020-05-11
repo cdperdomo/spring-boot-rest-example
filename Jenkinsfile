@@ -51,6 +51,22 @@ def pipeline() {
 		}
     }
 	
+	
+	stage ('Deploy DEV') {
+		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
+               sh "oc project ${DEV_PROJECT}"
+               // clean up. keep the image stream
+               sh "oc delete bc,dc,svc,route -l app=tasks -n ${DEV_PROJECT}"
+               // create build. override the exit code since it complains about exising imagestream
+               sh "oc new-build --name=tasks --image-stream=openjdk:8 --binary=true --labels=app=tasks -n ${DEV_PROJECT} || true"
+               // build image
+               sh "oc start-build tasks --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true -n ${DEV_PROJECT}"
+               // deploy image
+               sh "oc new-app tasks:latest -n ${DEV_PROJECT}"
+               sh "oc expose svc/tasks -n ${DEV_PROJECT}"
+		}
+	}
+	/*
 	stage('Build Image') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
 			echo '### Cleaning existing resources in DEV env ###'
@@ -74,7 +90,7 @@ def pipeline() {
                   }
                 }
             }
-            */
+            
 		}	
     }
 	stage('New APP') {
@@ -86,4 +102,5 @@ def pipeline() {
                '''
 		}
 	}
+	*/
 }
