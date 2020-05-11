@@ -67,13 +67,15 @@ def pipeline() {
      }
 	
 	stage('Build Image') {
-		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
-			echo '### Cleaning existing resources in ${DEV_PROJECT} env ###'
+		withEnv(["namespace=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
+			echo '### Cleaning existing resources in $namespace env ###'
             sh '''
-                    oc delete all -l app=${APP_NAME} -n ${DEV_PROJECT}
-                    oc delete all -l build=${APP_NAME} -n ${DEV_PROJECT}
+                    oc delete all -l app=${APP_NAME} -n ${namespace}
+                    oc delete all -l build=${APP_NAME} -n ${namespace}
                     sleep 5
-                    oc new-build openjdk:8 --name=${APP_NAME} --binary=true -n ${DEV_PROJECT}
+                    oc new-build openjdk:8 --name=${APP_NAME} --binary=true -n ${namespace}
+                    
+                    oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
                '''
                
             echo '### Starting Build ###'
