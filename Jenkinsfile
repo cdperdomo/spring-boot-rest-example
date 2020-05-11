@@ -7,13 +7,7 @@ node {
           ]
         )
     ])
-    try {
-        pipeline()
-    } catch (e) {
-		throw e
-    } finally {
-        echo 'Always'
-    }
+    pipeline()
 }
 
 def pipeline() {
