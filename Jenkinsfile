@@ -50,51 +50,44 @@ def pipeline() {
 			   '''
 		}
     }
-	
-	/*
-	stage ('Deploy DEV') {
-		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
-               sh "oc project ${DEV_PROJECT}"
-               // clean up. keep the image stream
-               sh "oc delete bc,dc,svc,route -l app=tasks -n ${DEV_PROJECT}"
-               // create build. override the exit code since it complains about exising imagestream
-               sh "oc new-build --name=tasks --image-stream=openjdk:8 --binary=true --labels=app=tasks -n ${DEV_PROJECT} || true"
-               // build image
-               sh "oc start-build tasks --from-dir=. --wait=true -n ${DEV_PROJECT}"
-               // deploy image
-               sh "oc new-app tasks:latest -n ${DEV_PROJECT}"
-               sh "oc expose svc/tasks -n ${DEV_PROJECT}"
-		}
-	}*/
-	
+    
+    stage ('Test and Static Code Analysis') {
+        parallel (
+           'Unit Test': {
+                withEnv(["MVN_HOME=$MVN_HOME"]) {
+		            sh '''
+		            	${MVN_HOME} -DskipTests=false -Dmaven.test.failure.ignore=false test'
+		               '''	
+		        }
+           },
+           'Static Code Analysis': {
+               echo '### Running SonarQuebe on Source Code ###'
+           }
+         )
+     }
 	
 	stage('Build Image') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
-			echo '### Cleaning existing resources in DEV env ###'
+			echo '### Cleaning existing resources in ${DEV_PROJECT} env ###'
             sh '''
                     oc delete all -l app=${APP_NAME} -n ${DEV_PROJECT}
                     oc delete all -l build=${APP_NAME} -n ${DEV_PROJECT}
                     sleep 5
                     oc new-build openjdk:8 --name=${APP_NAME} --binary=true -n ${DEV_PROJECT}
                '''
+               
             echo '### Starting Build ###'
-			
-			sh '''
-				oc start-build ${APP_NAME} --from-dir=. --wait=true -n ${DEV_PROJECT}
-			   '''
-			
-			/*
             script {
                 openshift.withCluster() {
                   openshift.withProject(env.DEV_PROJECT) {
-                    openshift.selector("bc", "${APP_NAME}").startBuild("--from-file=target/${ARTIFACT}-${artifactVersion}.jar", "--wait=true", "--follow=true")
+                    openshift.selector("bc", "${APP_NAME}").startBuild("--from-dir=.", "--wait=true", "--follow=true")
                   }
                 }
-            }*/
+            }
             
 		}	
     }
-	stage('New APP') {
+	stage('Deploy to DEV') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
 			 echo '### Creating a new app in DEV env ###'
 			 sh '''
