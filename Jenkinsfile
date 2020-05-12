@@ -80,7 +80,7 @@ def pipeline() {
             script {
                 openshift.withCluster() {
                 	openshift.withProject(env.namespace) {
-                    def buildConfigExists = openshift.selector("bc", "${appName}").exist()
+                    def buildConfigExists = openshift.selector("bc", "${appName}").exists()
                     if (!buildConfigExists) {
                     	echo '### Cleaning existing resources in Namespace: ' + env.namespace + ' ###'
             	    	sh '''
