@@ -88,7 +88,7 @@ def pipeline() {
                     if (!bcExists) {
                     	echo '### Creating BuildConfig in Namespace: ' + env.namespace + ' ###'
             	    	sh '''
-		                   		oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
+		                   		oc new-build --image-stream=openjdk:8 --name=${appName} --binary=true -n ${namespace}
 		                   '''    
                    	} else {
                    	      echo '### The BuildConfig already exists in namespace: ' + env.namespace + ' ###'
