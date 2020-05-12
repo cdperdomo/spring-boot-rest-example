@@ -10,6 +10,9 @@ node {
     pipeline()
 }
 
+/**
+* Pipeline Stages
+*/
 def pipeline() {
     echo "Namespace: ${params.namespace}"
     echo "Application name: ${params.appName}"
@@ -42,7 +45,7 @@ def pipeline() {
 	}
 	
 	stage('Compilation Check') {
-        echo 'Building ' + artifactName
+        echo 'Building ' + artifactName + '-' + artifactVersion
 		withEnv(["MVN_HOME=$mvnCmd"]) {
 			// Run the maven build
 			sh '''
@@ -82,24 +85,17 @@ def pipeline() {
                 	openshift.withProject(env.namespace) {
                     def buildConfigExists = openshift.selector("bc", "${appName}").exists()
                     if (!buildConfigExists) {
-                    	echo '### Cleaning existing resources in Namespace: ' + env.namespace + ' ###'
+                    	echo '### Creating BuildConfig in Namespace: ' + env.namespace + ' ###'
             	    	sh '''
 		                   		oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
 		                   '''    
                    	} else {
-                   	      echo '### The BuildConfig already exists in namespace' + env.namespace + ' ###'
+                   	      echo '### The BuildConfig already exists in namespace: ' + env.namespace + ' ###'
                    	  }
                   }
                 }
             }
             
-            sh '''
-                    oc delete all -l app=${appName} -n ${namespace}
-                    oc delete all -l build=${appName} -n ${namespace}
-                    sleep 5
-                    oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
-               '''
-               
             echo '### Starting Build ###'
             script {
                 openshift.withCluster() {
