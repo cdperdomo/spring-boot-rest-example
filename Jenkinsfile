@@ -94,7 +94,7 @@ def pipeline() {
                    	      echo '### The BuildConfig already exists in namespace: ' + env.namespace + ' ###'
                    	}
                    	
-                   	if (!bcExists) {
+                   	if (!dcExists) {
                    	    echo '### Creating DeploymentConfig ###' 
                    		sh '''
 								oc new-app ${namespace}/${appName}:0.0-0 --name=${appName} --allow-missing-imagestream-tags=true -n ${namespace}
@@ -109,7 +109,9 @@ def pipeline() {
                    	   sh '''
                    	   		 	oc expose svc ${appName} -n ${namespace}
                    	      '''
-                   	}
+                   	} else {
+                   	      echo '### The DeploymentConfig already exists in namespace: ' + env.namespace + ' ###'
+                   	  }
                   }
                 }
             }
