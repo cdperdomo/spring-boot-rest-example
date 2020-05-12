@@ -98,11 +98,17 @@ def pipeline() {
                    	    echo '### Creating DeploymentConfig ###' 
                    		sh '''
 								oc new-app ${namespace}/${appName}:0.0-0 --name=${appName} --allow-missing-imagestream-tags=true -n ${namespace}
-								oc set resources dc api-users --limits=memory=800Mi,cpu=1000m --requests=memory=600Mi,cpu=500m
+								oc set resources dc ${appName} --limits=memory=800Mi,cpu=1000m --requests=memory=600Mi,cpu=500m
 								oc set triggers dc/${appName} --remove-all -n ${namespace}
-								oc expose dc ${appName} --port 8080 -n ${namespace}
-								oc expose svc ${appName} -n ${namespace}
-		                   '''  
+		                   '''
+		               echo '### Creating Service ###' 
+                   	   sh '''
+                   	   			oc expose dc ${appName} --port 8080 -n ${namespace}
+                   	      '''
+                   	   echo '### Creating Route ###' 
+                   	   sh '''
+                   	   		 	oc expose svc ${appName} -n ${namespace}
+                   	      '''
                    	}
                   }
                 }
