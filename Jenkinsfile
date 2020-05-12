@@ -66,12 +66,12 @@ def pipeline() {
 	           'Static Code Analysis': {
 	                echo '### Running SonarQuebe on Source Code ###'
 			        def scannerHome = tool 'SonarQubeScanner'
-			        
+			        /*
 			        withSonarQubeEnv('SonarQube') {
 			           sh ''' 
 			           		${MVN_HOME} sonar:sonar -Dsonar.java.coveragePlugin=jacoco -Dsonar.junit.reportsPath=target/surefire-reports  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml 
 	                      '''
-			        }
+			        }*/
 	           }
 	         )
          } 
