@@ -118,6 +118,7 @@ def pipeline() {
             
             echo '### Starting Build ###'
              sh ''' 
+             		sleep 5
              		oc start-build ${appName} --from-dir=. --wait=true -n ${namespace}
                 '''  
            /* script {
@@ -134,7 +135,7 @@ def pipeline() {
                '''
 		}	
     }
-    /*
+    
 	stage('Deploy to DEV') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
 			echo '### Creating a new app in Namespace: ' + env.DEV_PROJECT + ' ###'
@@ -150,5 +151,5 @@ def pipeline() {
 	        echo "Replicas Deseadas ${rc_replicas} - Replicas Listas ${rc_replicas_ready}"
 		}
 	}
-	*/
+	
 }
