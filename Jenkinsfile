@@ -88,7 +88,7 @@ def pipeline() {
                     if (!bcExists) {
                     	echo '### Creating BuildConfig in Namespace: ' + env.namespace + ' ###'
             	    	sh '''
-		                   		oc new-build --image-stream=openjdk:8 --name=${appName} --binary=true -n ${namespace}
+		                   		oc new-build --name=${appName} --image-stream=openjdk:8 --binary=true -n ${namespace}
 		                   '''    
                    	} else {
                    	      echo '### The BuildConfig already exists in namespace: ' + env.namespace + ' ###'
@@ -97,7 +97,7 @@ def pipeline() {
                    	if (!dcExists) {
                    	    echo '### Creating DeploymentConfig ###' 
                    		sh '''
-								oc new-app --image-stream=${namespace}/${appName}:0.0-0 --name=${appName} --allow-missing-imagestream-tags=true -n ${namespace}
+								oc new-app --name=${appName} --image-stream=${namespace}/${appName}:0.0-0 --allow-missing-imagestream-tags=true -n ${namespace}
 								oc set resources dc ${appName} --limits=memory=800Mi,cpu=1000m --requests=memory=600Mi,cpu=500m
 								oc set triggers dc/${appName} --remove-all -n ${namespace}
 		                   '''
@@ -117,13 +117,16 @@ def pipeline() {
             }
             
             echo '### Starting Build ###'
-            script {
+             sh ''' 
+             		oc start-build ${appName} --from-dir=. --wait=true -n ${namespace}
+                '''  
+           /* script {
                 openshift.withCluster() {
                   openshift.withProject(env.namespace) {
                     openshift.selector("bc", "${appName}").startBuild("--from-dir=.", "--wait=true", "--follow=true")
                   }
                 }
-            }
+            }*/
             
             echo '### Tagging Image ###'
             sh '''
