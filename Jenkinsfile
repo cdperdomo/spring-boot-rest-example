@@ -66,12 +66,12 @@ def pipeline() {
 	           'Static Code Analysis': {
 	                echo '### Running SonarQuebe on Source Code ###'
 			        def scannerHome = tool 'SonarQubeScanner'
-			        /*
+			        
 			        withSonarQubeEnv('SonarQube') {
 			           sh ''' 
 			           		${MVN_HOME} sonar:sonar -Dsonar.java.coveragePlugin=jacoco -Dsonar.junit.reportsPath=target/surefire-reports  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml 
 	                      '''
-			        }*/
+			        }
 	           }
 	         )
          } 
@@ -117,17 +117,13 @@ def pipeline() {
             }
             
             echo '### Starting Build ###'
-             sh ''' 
-             		sleep 5
-             		oc start-build ${appName} --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true --follow -n ${namespace}
-                '''  
-           /* script {
+            script {
                 openshift.withCluster() {
                   openshift.withProject(env.namespace) {
                     openshift.selector("bc", "${appName}").startBuild("--from-dir=.", "--wait=true", "--follow=true")
                   }
                 }
-            }*/
+            }
             
             echo '### Tagging Image ###'
             sh '''
