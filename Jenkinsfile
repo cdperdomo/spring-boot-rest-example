@@ -83,15 +83,27 @@ def pipeline() {
             script {
                 openshift.withCluster() {
                 	openshift.withProject(env.namespace) {
-                    def buildConfigExists = openshift.selector("bc", "${appName}").exists()
-                    if (!buildConfigExists) {
+                    def bcExists = openshift.selector("bc", "${appName}").exists()
+                    def dcExists = openshift.selector("dc", "${appName}").exists()
+                    if (!bcExists) {
                     	echo '### Creating BuildConfig in Namespace: ' + env.namespace + ' ###'
             	    	sh '''
 		                   		oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
 		                   '''    
                    	} else {
                    	      echo '### The BuildConfig already exists in namespace: ' + env.namespace + ' ###'
-                   	  }
+                   	}
+                   	
+                   	if (!bcExists) {
+                   	    echo '### Creating DeploymentConfig ###' 
+                   		sh '''
+								oc new-app ${namespace}/${appName}:0.0-0 --name=${appName} --allow-missing-imagestream-tags=true -n ${namespace}
+								oc set resources dc api-users --limits=memory=800Mi,cpu=1000m --requests=memory=600Mi,cpu=500m
+								oc set triggers dc/${appName} --remove-all -n ${namespace}
+								oc expose dc ${appName} --port 8080 -n ${namespace}
+								oc expose svc ${appName} -n ${namespace}
+		                   '''  
+                   	}
                   }
                 }
             }
@@ -111,15 +123,21 @@ def pipeline() {
                '''
 		}	
     }
-    /**
+    /*
 	stage('Deploy to DEV') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
-			 echo '### Creating a new app in Namespace: ' + env.DEV_PROJECT + ' ###'
-			 sh '''
-                    oc new-app ${APP_NAME}:latest -n ${DEV_PROJECT}
-                    oc expose svc/${APP_NAME} -n ${DEV_PROJECT}
-               '''
+			echo '### Creating a new app in Namespace: ' + env.DEV_PROJECT + ' ###'
+			sh "oc set image dc/${params.appName} ${params.appName}=${params.namespace}/${params.appName}:${devTag} --source=imagestreamtag -n ${params.namespace}"
+	        sh "oc rollout latest dc/${params.appName} -n ${params.namespace}"
+	        
+	        def dc_version = sh(script:"oc get dc/${params.appName} -o=yaml -n ${params.namespace} | grep 'latestVersion'| cut -d':' -f 2" , returnStdout:true).trim();
+	        echo "Version de DeploymentConfig Actual ${dc_version}"
+	        
+	        def rc_replicas = sh(returnStdout: true, script: "oc get rc/${params.appName}-${dc_version} -o yaml -n ${params.namespace} |grep -A 5  'status:' |grep 'replicas:' | cut -d ':' -f2").trim()
+	        def rc_replicas_ready = sh(returnStdout: true, script: "oc get rc/${params.appName}-${dc_version} -o yaml -n ${params.namespace} |grep -A 5  'status:' |grep 'readyReplicas:' | cut -d ':' -f2").trim()
+	
+	        echo "Replicas Deseadas ${rc_replicas} - Replicas Listas ${rc_replicas_ready}"
 		}
 	}
-	**/
+	*/
 }
