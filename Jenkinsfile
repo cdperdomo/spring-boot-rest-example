@@ -66,17 +66,33 @@ def pipeline() {
 			        
 			        withSonarQubeEnv('SonarQube') {
 			           sh ''' 
-			           		${MVN_HOME} sonar:sonar -Dsonar.java.coveragePlugin=jacoco 
+			           		${MVN_HOME} sonar:sonar -Dsonar.java.coveragePlugin=jacoco -Dsonar.junit.reportsPath=target/surefire-reports  -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml 
 	                      '''
 			        }
 	           }
 	         )
          }
     }
-	/**
+	
 	stage('Build Image') {
 		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
-			echo '### Cleaning existing resources in Namespace: ' + env.namespace + ' ###'
+			
+            script {
+                openshift.withCluster() {
+                	openshift.withProject(env.namespace) {
+                    def buildConfigExists = openshift.selector("bc", "${appName}").exist()
+                    if (!buildConfigExists) {
+                    	echo '### Cleaning existing resources in Namespace: ' + env.namespace + ' ###'
+            	    	sh '''
+		                   		oc new-build openjdk:8 --name=${appName} --binary=true -n ${namespace}
+		                   '''    
+                   	} else {
+                   	      echo '### The BuildConfig already exists in namespace' + env.namespace + ' ###'
+                   	  }
+                  }
+                }
+            }
+            
             sh '''
                     oc delete all -l app=${appName} -n ${namespace}
                     oc delete all -l build=${appName} -n ${namespace}
@@ -93,12 +109,13 @@ def pipeline() {
                 }
             }
             
+            echo '### Tagging Image ###'
             sh '''
             		oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
                '''
 		}	
     }
-    
+    /**
 	stage('Deploy to DEV') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
 			 echo '### Creating a new app in Namespace: ' + env.DEV_PROJECT + ' ###'
