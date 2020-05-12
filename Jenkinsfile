@@ -52,21 +52,28 @@ def pipeline() {
     }
     
     stage ('Test and Static Code Analysis') {
-        parallel (
-           'Unit Test': {
-                withEnv(["MVN_HOME=$mvnCmd"]) {
-                	echo '### Running Unit Test ###'
+    	withEnv(["MVN_HOME=$mvnCmd"]) {
+	        parallel (
+	           'Unit Test': {
+	            	echo '### Running Unit Test ###'
 		            sh '''
 		            	${MVN_HOME} -DskipTests=false -Dmaven.test.failure.ignore=false test
 		               '''	
-		        }
-           },
-           'Static Code Analysis': {
-               echo '### Running SonarQuebe on Source Code ###'
-           }
-         )
-     }
-	
+	           },
+	           'Static Code Analysis': {
+	                echo '### Running SonarQuebe on Source Code ###'
+			        def scannerHome = tool 'SonarQubeScanner'
+			        
+			        withSonarQubeEnv('SonarQube') {
+			           sh ''' 
+			           		${MVN_HOME} sonar:sonar -Dsonar.java.coveragePlugin=jacoco 
+	                      '''
+			        }
+	           }
+	         )
+         }
+    }
+	/**
 	stage('Build Image') {
 		withEnv(["namespace=$params.namespace", "appName=$params.appName", "tag=$tag", "artifactName=$artifactName", "artifactVersion=$artifactVersion"]) {
 			echo '### Cleaning existing resources in Namespace: ' + env.namespace + ' ###'
@@ -91,6 +98,7 @@ def pipeline() {
                '''
 		}	
     }
+    
 	stage('Deploy to DEV') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
 			 echo '### Creating a new app in Namespace: ' + env.DEV_PROJECT + ' ###'
@@ -100,5 +108,5 @@ def pipeline() {
                '''
 		}
 	}
-	
+	**/
 }
