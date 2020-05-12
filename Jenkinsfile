@@ -55,6 +55,7 @@ def pipeline() {
         parallel (
            'Unit Test': {
                 withEnv(["MVN_HOME=$mvnCmd"]) {
+                	echo '### Running Unit Test ###'
 		            sh '''
 		            	${MVN_HOME} -DskipTests=false -Dmaven.test.failure.ignore=false test
 		               '''	
