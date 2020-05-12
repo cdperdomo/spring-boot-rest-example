@@ -119,7 +119,7 @@ def pipeline() {
             echo '### Starting Build ###'
              sh ''' 
              		sleep 5
-             		oc start-build ${appName} --from-dir=. --wait=true --follow -n ${namespace}
+             		oc start-build ${appName} --from-file=./target/${artifactName}-${artifactVersion}.jar --wait=true --follow -n ${namespace}
                 '''  
            /* script {
                 openshift.withCluster() {
