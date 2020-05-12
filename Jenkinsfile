@@ -88,12 +88,11 @@ def pipeline() {
             sh '''
             		oc tag ${appName}:latest ${appName}:${tag} -n ${namespace}
                '''
-            
 		}	
     }
 	stage('Deploy to DEV') {
 		withEnv(["DEV_PROJECT=$params.namespace", "APP_NAME=$params.appName"]) {
-			 echo '### Creating a new app in DEV env ###'
+			 echo '### Creating a new app in Namespace: ' + env.DEV_PROJECT + ' ###'
 			 sh '''
                     oc new-app ${APP_NAME}:latest -n ${DEV_PROJECT}
                     oc expose svc/${APP_NAME} -n ${DEV_PROJECT}
